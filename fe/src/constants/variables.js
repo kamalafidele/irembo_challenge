@@ -44,6 +44,7 @@ const variables = {
         productWeight: '',
         measurementUnit: '',
         productQuantity: '',
+        productDescrition: '',
     }
 }
 

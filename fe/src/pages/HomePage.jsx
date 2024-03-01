@@ -14,8 +14,8 @@ import ErrorMessage from '../components/ErrorMessage';
 import servicesAPI from '../api/servicesAPI';
 
 const validationSchema = Yup.object().shape({
-    citizenship: Yup.string().required().label('Citizenship'),
-    idNumber: Yup.string().optional().label('Identification Number'),
+    citizenship: Yup.string().optional().label('Citizenship'),
+    idNumber: Yup.string().min(15).max(15).optional().label('Identification Number'),
     passportNumber: Yup.number().optional().label('Passport Number'),
     phoneNumber: Yup.string().matches(/^[0-9]+$/, "Must be only digits").min(9).max(10).label('Phone number'),
     email: Yup.string().email().optional().label('Email Address'),
@@ -30,24 +30,31 @@ const validationSchema = Yup.object().shape({
     productWeight: Yup.number().required().label('Weight'),
     measurementUnit: Yup.string().required().label('Unit of measurement'),
     productQuantity: Yup.number().required().label('Quantity of product'),
+    productDescrition: Yup.string().required().label('Product description'),
 });
 
 function HomePage(props) {
     const [error, setError] = useState(null);
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
+    const [citizenship, setCitizenShip] = useState('');
 
-    const handleSubmission = async (values) => { 
+    const handleSubmission = async (values) => {
         setLoading(true);
         const result = await servicesAPI.registerNewBusiness(values);
         setLoading(false);
-    
+
         if (result.ok) {
             setMessage(result.data.message);
         } else {
             setError(result.data.status || result.data.error)
         };
     }
+
+    const checkCitizenShip = (e) => {
+        e.preventDefault();
+        setCitizenShip(e.target.value);
+    };
 
     return (
         <Container>
@@ -70,16 +77,42 @@ function HomePage(props) {
                                 <Header content={'Business Owner Details'} fontSize='20px' />
                                 <div className="row">
                                     <label htmlFor="citizenship">Applicant CitizenShip</label>
-                                    <Select 
-                                    data={constantVariables.CITIZEN_SHIP} 
-                                    placeHolder={'Select Citizenship'} 
-                                    onChange={handleChange("citizenship")}
-                                    onBlur={() => setFieldTouched("citizenship")}
+                                    <Select
+                                        data={constantVariables.CITIZEN_SHIP}
+                                        placeHolder={'Select Citizenship'}
+                                        onChange={checkCitizenShip}
+                                        onBlur={() => setFieldTouched("citizenship")}
                                     />
                                     {touched.citizenship && <ErrorMessage text={errors.citizenship} />}
                                 </div>
 
-                                { touched.citizenship}
+                                {citizenship === 'Rwandan' && (
+                                    <div className="row">
+                                        <label htmlFor='idNumber'>ID Number</label>
+                                        <Input
+                                            type={'number'}
+                                            width={45}
+                                            placeHolder={'120024394394343'}
+                                            onChange={handleChange("idNumber")}
+                                            onBlur={() => setFieldTouched("idNumber")}
+                                        />
+                                        {touched.idNumber && <ErrorMessage text={errors.idNumber} />}
+                                    </div>
+                                )}
+
+                                {citizenship === 'Foreigner' && (
+                                    <div className="row">
+                                        <label htmlFor='passportNumber'>Passport Number</label>
+                                        <Input
+                                            type={'number'}
+                                            width={45}
+                                            placeHolder={'23024394394343'}
+                                            onChange={handleChange("passportNumber")}
+                                            onBlur={() => setFieldTouched("passportNumber")}
+                                        />
+                                        {touched.passportNumber && <ErrorMessage text={errors.passportNumber} />}
+                                    </div>
+                                )}
 
                                 <div className="owner-contacts" style={{ display: 'flex' }}>
                                     <div className="row">
@@ -96,11 +129,11 @@ function HomePage(props) {
 
                                     <div className="row">
                                         <label htmlFor='email'>Email Address</label>
-                                        <Input 
-                                        type={'email'} width={60} 
-                                        placeHolder={'Enter email address'} 
-                                        onChange={handleChange("email")}
-                                        onBlur={() => setFieldTouched("email")} 
+                                        <Input
+                                            type={'email'} width={60}
+                                            placeHolder={'Enter email address'}
+                                            onChange={handleChange("email")}
+                                            onBlur={() => setFieldTouched("email")}
                                         />
                                         {touched.email && <ErrorMessage text={errors.email} />}
                                     </div>
@@ -109,11 +142,11 @@ function HomePage(props) {
                                 <Header content={'Business Owner Address'} fontSize='20px' />
                                 <div className="row">
                                     <label htmlFor="ownerAddress">Business owner address</label>
-                                    <Select 
-                                    data={constantVariables.PROVINCES} 
-                                    placeHolder={'Select Province'} 
-                                    onChange={handleChange("ownerAddress")}
-                                    onBlur={() => setFieldTouched("ownerAddress")}
+                                    <Select
+                                        data={constantVariables.PROVINCES}
+                                        placeHolder={'Select Province'}
+                                        onChange={handleChange("ownerAddress")}
+                                        onBlur={() => setFieldTouched("ownerAddress")}
                                     />
                                     {touched.ownerAddress && <ErrorMessage text={errors.ownerAddress} />}
                                 </div>
@@ -127,24 +160,24 @@ function HomePage(props) {
                                 <div className="company-details" style={{ display: 'flex' }}>
                                     <div className="row">
                                         <label htmlFor='businessType'>Business type</label>
-                                        <Select 
-                                        data={constantVariables.BUSINESS_TYPES} 
-                                        placeHolder={'Select business type'}
-                                        width={90}
-                                        onChange={handleChange("businessType")}
-                                        onBlur={() => setFieldTouched("businessType")}
+                                        <Select
+                                            data={constantVariables.BUSINESS_TYPES}
+                                            placeHolder={'Select business type'}
+                                            width={90}
+                                            onChange={handleChange("businessType")}
+                                            onBlur={() => setFieldTouched("businessType")}
                                         />
                                         {touched.businessType && <ErrorMessage text={errors.businessType} />}
                                     </div>
 
                                     <div className="row">
                                         <label htmlFor='companyName'>Company name</label>
-                                        <Input 
-                                        type={'text'} 
-                                        width={60} 
-                                        placeHolder={'Enter company name'} 
-                                        onChange={handleChange("companyName")}
-                                        onBlur={() => setFieldTouched("companyName")}
+                                        <Input
+                                            type={'text'}
+                                            width={60}
+                                            placeHolder={'Enter company name'}
+                                            onChange={handleChange("companyName")}
+                                            onBlur={() => setFieldTouched("companyName")}
                                         />
                                         {touched.companyName && <ErrorMessage text={errors.companyName} />}
                                     </div>
@@ -153,23 +186,23 @@ function HomePage(props) {
                                 <div className="company-credentials" style={{ display: 'flex' }}>
                                     <div className="row">
                                         <label htmlFor='businessTinNumber'>TIN Number</label>
-                                        <Input 
-                                        type={'number'} 
-                                        width={90} 
-                                        placeHolder={'Enter TIN number'} 
-                                        onChange={handleChange("businessTinNumber")}
-                                        onBlur={() => setFieldTouched("businessTinNumber")}
+                                        <Input
+                                            type={'number'}
+                                            width={90}
+                                            placeHolder={'Enter TIN number'}
+                                            onChange={handleChange("businessTinNumber")}
+                                            onBlur={() => setFieldTouched("businessTinNumber")}
                                         />
                                         {touched.businessTinNumber && <ErrorMessage text={errors.businessTinNumber} />}
                                     </div>
                                     <div className="row">
                                         <label htmlFor='registrationDate'>Registration Date</label>
-                                        <Input 
-                                        placeHolder={'Choose date'} 
-                                        type={'date'} 
-                                        width={60} 
-                                        onChange={handleChange("registrationDate")}
-                                        onBlur={() => setFieldTouched("registrationDate")}
+                                        <Input
+                                            placeHolder={'Choose date'}
+                                            type={'date'}
+                                            width={60}
+                                            onChange={handleChange("registrationDate")}
+                                            onBlur={() => setFieldTouched("registrationDate")}
                                         />
                                         {touched.registrationDate && <ErrorMessage text={errors.registrationDate} />}
                                     </div>
@@ -178,11 +211,11 @@ function HomePage(props) {
                                 <Header content={'Business Address'} fontSize='20px' />
                                 <div className="row">
                                     <label htmlFor='businessAddress'>Business Address</label>
-                                    <Select 
-                                    data={constantVariables.PROVINCES} 
-                                    placeHolder={'Select province'} 
-                                    onChange={handleChange("businessAddress")}
-                                    onBlur={() => setFieldTouched("businessAddress")}
+                                    <Select
+                                        data={constantVariables.PROVINCES}
+                                        placeHolder={'Select province'}
+                                        onChange={handleChange("businessAddress")}
+                                        onBlur={() => setFieldTouched("businessAddress")}
                                     />
                                     {touched.businessAddress && <ErrorMessage text={errors.businessAddress} />}
                                 </div>
@@ -196,11 +229,11 @@ function HomePage(props) {
                                 <Header content={'Importation Details'} fontSize='20px' />
                                 <div className="row">
                                     <label htmlFor='importationPurpose'>Purpose of Importation</label>
-                                    <Select 
-                                    data={constantVariables.IMPORTATION_PURPOSES} 
-                                    placeHolder={'Enter the purpose of importation'} 
-                                    onChange={handleChange("importationPurpose")}
-                                    onBlur={() => setFieldTouched("importationPurpose")}
+                                    <Select
+                                        data={constantVariables.IMPORTATION_PURPOSES}
+                                        placeHolder={'Enter the purpose of importation'}
+                                        onChange={handleChange("importationPurpose")}
+                                        onBlur={() => setFieldTouched("importationPurpose")}
                                     />
                                     {touched.importationPurpose && <ErrorMessage text={errors.importationPurpose} />}
                                 </div>
@@ -208,22 +241,22 @@ function HomePage(props) {
                                 <Header content={'Product Details'} fontSize='20px' />
                                 <div className="row">
                                     <label htmlFor='productCategory'>Product Category</label>
-                                    <Select 
-                                    data={constantVariables.PRODUCT_CATEGORIES} 
-                                    placeHolder={'Enter product category'}
-                                    onChange={handleChange("productCategory")}
-                                    onBlur={() => setFieldTouched("productCategory")}
+                                    <Select
+                                        data={constantVariables.PRODUCT_CATEGORIES}
+                                        placeHolder={'Enter product category'}
+                                        onChange={handleChange("productCategory")}
+                                        onBlur={() => setFieldTouched("productCategory")}
                                     />
                                     {touched.productCategory && <ErrorMessage text={errors.productCategory} />}
                                 </div>
 
                                 <div className="row">
                                     <label htmlFor="productWeight">Weight (Kg) </label>
-                                    <Input 
-                                    type={'number'} 
-                                    placeHolder={'Weight (Kg)'} 
-                                    onChange={handleChange("productWeight")}
-                                    onBlur={() => setFieldTouched("productWeight")}
+                                    <Input
+                                        type={'number'}
+                                        placeHolder={'Weight (Kg)'}
+                                        onChange={handleChange("productWeight")}
+                                        onBlur={() => setFieldTouched("productWeight")}
                                     />
                                     {touched.productWeight && <ErrorMessage text={errors.productWeight} />}
                                 </div>
@@ -231,35 +264,46 @@ function HomePage(props) {
                                 <div className="product-metrics" style={{ display: 'flex' }}>
                                     <div className="row">
                                         <label htmlFor='measurementUnit'>Unit of Measurement</label>
-                                        <Select 
-                                        data={constantVariables.MEASUREMENT_UNITS} 
-                                        placeHolder={'Enter unit of measurement'} 
-                                        width={90} 
-                                        onChange={handleChange("measurementUnit")}
-                                        onBlur={() => setFieldTouched("measurementUnit")}
+                                        <Select
+                                            data={constantVariables.MEASUREMENT_UNITS}
+                                            placeHolder={'Enter unit of measurement'}
+                                            width={90}
+                                            onChange={handleChange("measurementUnit")}
+                                            onBlur={() => setFieldTouched("measurementUnit")}
                                         />
                                         {touched.measurementUnit && <ErrorMessage text={errors.measurementUnit} />}
                                     </div>
                                     <div className="row">
                                         <label htmlFor='productQuantity'>Quantity of Product</label>
-                                        <Input 
-                                        placeHolder={'Enter quantity'} 
-                                        type={'number'}
-                                        onChange={handleChange("productQuantity")}
-                                        onBlur={() => setFieldTouched("productQuantity")}
+                                        <Input
+                                            placeHolder={'Enter quantity'}
+                                            type={'number'}
+                                            onChange={handleChange("productQuantity")}
+                                            onBlur={() => setFieldTouched("productQuantity")}
                                         />
                                         {touched.productQuantity && <ErrorMessage text={errors.productQuantity} />}
                                     </div>
                                 </div>
                                 <div className="row">
-                                    <Button text={loading ? 'Loading.....' : "Submit"} width={30} onClick={handleSubmit}/>
+                                    <label htmlFor='productQuantity'>Product Description</label>
+                                    <Input
+                                        placeHolder={'Enter Product description'}
+                                        type={'text'}
+                                        height={70}
+                                        onChange={handleChange("productDescrition")}
+                                        onBlur={() => setFieldTouched("productDescrition")}
+                                    />
+                                    {touched.productDescrition && <ErrorMessage text={errors.productDescrition} />}
+                                </div>
+                                <div className="row">
+                                    <Button text={loading ? 'Loading.....' : "Submit"} width={30} onClick={handleSubmit} />
                                 </div>
                             </FormControlsWrapper>
                         </FormContainer>
                     </>
                 )}
             </Formik>
-            <h2 style={{ color: COLOR_PALETTE.GREEN }}> { message || error } </h2>
+            <h2 style={{ color: COLOR_PALETTE.GREEN }}> {message || error} </h2>
         </Container>
     );
 }
