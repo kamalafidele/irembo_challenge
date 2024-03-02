@@ -14,18 +14,32 @@ import ErrorMessage from '../components/ErrorMessage';
 import servicesAPI from '../api/servicesAPI';
 
 const validationSchema = Yup.object().shape({
-    citizenship: Yup.string().optional().label('Citizenship'),
-    idNumber: Yup.string().min(15).max(15).optional().label('Identification Number'),
-    passportNumber: Yup.number().optional().label('Passport Number'),
-    phoneNumber: Yup.string().matches(/^[0-9]+$/, "Must be only digits").min(9).max(10).label('Phone number'),
+    citizenship: Yup.string().required().label('Citizenship'),
+    idNumber: Yup.string().when('citizenship', {
+        is: (citizenship) =>  citizenship === 'Rwandan',
+        then: () => Yup.string().matches(/^.{16}$/, 'National ID must be 16 characters').required().label('National ID'),
+    }),
+    passportNumber: Yup.string().when('citizenship', {
+        is: (citizenship) =>  citizenship === 'Foreigner',
+        then: () => Yup.string().required().label('Passport Number')
+    }),
+    phoneNumber: Yup.string().matches(/^.{9}$/, "Phone number must 10 characters").label('Phone number'),
     email: Yup.string().email().optional().label('Email Address'),
-    ownerAddress: Yup.string().required().label('Business Owner Address'),
+    ownerProvince: Yup.string().required().label('Business Owner Address'),
+    ownerDistrict: Yup.string().when('ownerProvince', {
+        is: (ownerProvince) => ownerProvince !== '',
+        then: () => Yup.string().required().label('District'),
+    }),
     businessType: Yup.string().required().label('Business Type'),
     companyName: Yup.string().required().label('Company name'),
     businessTinNumber: Yup.number().required().label('Business TIN Number'),
     registrationDate: Yup.string().required().label('Business Registration date'),
     businessAddress: Yup.string().required().label('Business Address'),
     importationPurpose: Yup.string().required().label('Importation purpose'),
+    otherPurpose: Yup.string().when('importationPurpose', {
+        is: (importationPurpose) => importationPurpose === 'Other',
+        then: () => Yup.string().required().label('Importation Purpose'),
+    }),
     productCategory: Yup.string().required().label('Product category'),
     productWeight: Yup.number().required().label('Weight'),
     measurementUnit: Yup.string().required().label('Unit of measurement'),
@@ -37,7 +51,6 @@ function HomePage(props) {
     const [error, setError] = useState(null);
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
-    const [citizenship, setCitizenShip] = useState('');
 
     const handleSubmission = async (values) => {
         setLoading(true);
@@ -50,11 +63,6 @@ function HomePage(props) {
             setError(result.data.status || result.data.error)
         };
     }
-
-    const checkCitizenShip = (e) => {
-        e.preventDefault();
-        setCitizenShip(e.target.value);
-    };
 
     return (
         <Container>
@@ -69,6 +77,7 @@ function HomePage(props) {
                     setFieldTouched,
                     touched,
                     errors,
+                    values
                 }) => (
                     <>
                         <FormContainer className="owner-details">
@@ -80,38 +89,42 @@ function HomePage(props) {
                                     <Select
                                         data={constantVariables.CITIZEN_SHIP}
                                         placeHolder={'Select Citizenship'}
-                                        onChange={checkCitizenShip}
+                                        onChange={handleChange('citizenship')}
                                         onBlur={() => setFieldTouched("citizenship")}
                                     />
                                     {touched.citizenship && <ErrorMessage text={errors.citizenship} />}
                                 </div>
 
-                                {citizenship === 'Rwandan' && (
-                                    <div className="row">
-                                        <label htmlFor='idNumber'>ID Number</label>
-                                        <Input
-                                            type={'number'}
-                                            width={45}
-                                            placeHolder={'120024394394343'}
-                                            onChange={handleChange("idNumber")}
-                                            onBlur={() => setFieldTouched("idNumber")}
-                                        />
-                                        {touched.idNumber && <ErrorMessage text={errors.idNumber} />}
-                                    </div>
-                                )}
+                                {touched.citizenship && (
+                                    <>
+                                        {values.citizenship === 'Rwandan' && (
+                                            <div className="row">
+                                                <label htmlFor='idNumber'>National ID Number</label>
+                                                <Input
+                                                    type={'number'}
+                                                    width={45}
+                                                    placeHolder={'Enter Identification document number'}
+                                                    onChange={handleChange("idNumber")}
+                                                    onBlur={() => setFieldTouched("idNumber")}
+                                                />
+                                                {touched.idNumber && <ErrorMessage text={errors.idNumber} />}
+                                            </div>
+                                        )}
 
-                                {citizenship === 'Foreigner' && (
-                                    <div className="row">
-                                        <label htmlFor='passportNumber'>Passport Number</label>
-                                        <Input
-                                            type={'number'}
-                                            width={45}
-                                            placeHolder={'23024394394343'}
-                                            onChange={handleChange("passportNumber")}
-                                            onBlur={() => setFieldTouched("passportNumber")}
-                                        />
-                                        {touched.passportNumber && <ErrorMessage text={errors.passportNumber} />}
-                                    </div>
+                                        {values.citizenship === 'Foreigner' && (
+                                            <div className="row">
+                                                <label htmlFor='passportNumber'>Passport Number</label>
+                                                <Input
+                                                    type={'number'}
+                                                    width={45}
+                                                    placeHolder={'Enter Identification document number'}
+                                                    onChange={handleChange("passportNumber")}
+                                                    onBlur={() => setFieldTouched("passportNumber")}
+                                                />
+                                                {touched.passportNumber && <ErrorMessage text={errors.passportNumber} />}
+                                            </div>
+                                        )}
+                                    </>
                                 )}
 
                                 <div className="owner-contacts" style={{ display: 'flex' }}>
@@ -141,15 +154,33 @@ function HomePage(props) {
 
                                 <Header content={'Business Owner Address'} fontSize='20px' />
                                 <div className="row">
-                                    <label htmlFor="ownerAddress">Business owner address</label>
+                                    <label htmlFor="ownerProvince">Business owner address</label>
                                     <Select
                                         data={constantVariables.PROVINCES}
                                         placeHolder={'Select Province'}
-                                        onChange={handleChange("ownerAddress")}
-                                        onBlur={() => setFieldTouched("ownerAddress")}
+                                        onChange={handleChange("ownerProvince")}
+                                        onBlur={() => setFieldTouched("ownerProvince")}
                                     />
-                                    {touched.ownerAddress && <ErrorMessage text={errors.ownerAddress} />}
+                                    {touched.ownerProvince && <ErrorMessage text={errors.ownerProvince} />}
                                 </div>
+
+                                {touched.ownerProvince && (
+                                    <>
+                                        {values.ownerProvince !== '' && (
+                                            <div className="row">
+                                                <label htmlFor='ownerDistrict'>District</label>
+                                                <Input
+                                                    type={'text'}
+                                                    width={45}
+                                                    placeHolder={'Enter district'}
+                                                    onChange={handleChange("ownerDistrict")}
+                                                    onBlur={() => setFieldTouched("ownerDistrict")}
+                                                />
+                                                {touched.ownerDistrict && <ErrorMessage text={errors.ownerDistrict} />}
+                                            </div>
+                                        )}
+                                    </>
+                                )}
                             </FormControlsWrapper>
                         </FormContainer>
 
@@ -237,6 +268,24 @@ function HomePage(props) {
                                     />
                                     {touched.importationPurpose && <ErrorMessage text={errors.importationPurpose} />}
                                 </div>
+
+                                {touched.importationPurpose && (
+                                    <>
+                                        {values.importationPurpose === 'Other' && (
+                                            <div className="row">
+                                                <label htmlFor='otherPurpose'>Specify Importation purpose</label>
+                                                <Input
+                                                    type={'text'}
+                                                    width={45}
+                                                    placeHolder={'Specify Importation purpose'}
+                                                    onChange={handleChange("otherPurpose")}
+                                                    onBlur={() => setFieldTouched("otherPurpose")}
+                                                />
+                                                {touched.otherPurpose && <ErrorMessage text={errors.otherPurpose} />}
+                                            </div>
+                                        )}
+                                    </>
+                                )}
 
                                 <Header content={'Product Details'} fontSize='20px' />
                                 <div className="row">

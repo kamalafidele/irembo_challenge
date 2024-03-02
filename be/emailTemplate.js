@@ -35,14 +35,15 @@ const formatEmail = (data) => {
 
             <div class="info-container">
                <p><span>Your citizenship</span>: ${data.citizenship}<p>
-               <p><span>Your address</span>: ${data.ownerAddress}<p>
+               <p><span>Your ${data.passportNumber ? 'National ID' : 'Passport'}</span>: ${data.passportNumber || data.idNumber}<p>
+               <p><span>Your address</span>: ${data.ownerProvince}, ${data.ownerDistrict}<p>
                <p><span>Your phone</span>: ${data.phoneNumber}<p>
                <p><span>Business Type</span>: ${data.businessType}<p>
                <p><span>Company Name</span>: ${data.companyName}<p>
                <p><span>Business Address</span>: ${data.businessAddress}<p>
                <p><span>Business TIN number</span>: ${data.businessTinNumber}<p>
                <p><span>Business Registration date</span>: ${data.registrationDate}<p>
-               <p><span>Importation purpose</span>: ${data.importationPurpose}<p>
+               <p><span>Importation purpose</span>: ${data.otherPurpose || data.importationPurpose}<p>
                <p><span>Product category</span>: ${data.productCategory}<p>
                <p><span>Product quantity</span>: ${data.productQuantity}<p>
             <div>

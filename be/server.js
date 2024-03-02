@@ -21,7 +21,6 @@ app.use(
 );
 
 app.post('/businessRegistration', (req, res) => {
-
   let transporter = nodemailer.createTransport({
       service: 'Gmail',
       auth: {
@@ -30,7 +29,6 @@ app.post('/businessRegistration', (req, res) => {
       }
   });
 
-  
   let mailOptions = {
       from: EMAIL_USERNAME,
       to: req.body.email,
